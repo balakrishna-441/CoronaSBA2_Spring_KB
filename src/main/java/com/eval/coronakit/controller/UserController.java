@@ -53,33 +53,32 @@ public class UserController {
 	@RequestMapping("/add-to-cart/{productId}")
 	public String showKit(@PathVariable("productId") int productId, HttpSession session) {
 		ProductMaster product = productService.getProductById(productId);
-		if (product != null) {
-			if (session.getAttribute("cartItems") == null) {
-				List<KitDetail> cart = new ArrayList<KitDetail>();
+		if (session.getAttribute("cartItems") == null) {
+			List<KitDetail> cart = new ArrayList<KitDetail>();
+			KitDetail kit = new KitDetail();
+			kit.setQuantity(1);
+			kit.setAmount(product.getCost());
+			kit.setProductId(product.getId());
+			kit.setProductName(product.getProductName());
+			cart.add(kit);
+			session.setAttribute("cartItems", cart);
+		} else {
+			List<KitDetail> cart = (List<KitDetail>) session.getAttribute("cartItems");
+			int index = this.exists(productId, cart);
+			if (index == -1) {
 				KitDetail kit = new KitDetail();
 				kit.setQuantity(1);
 				kit.setAmount(product.getCost());
 				kit.setProductId(product.getId());
 				kit.setProductName(product.getProductName());
 				cart.add(kit);
-				session.setAttribute("cartItems", cart);
 			} else {
-				List<KitDetail> cart = (List<KitDetail>) session.getAttribute("cartItems");
-				int index = this.exists(productId, cart);
-				if (index == -1) {
-					KitDetail kit = new KitDetail();
-					kit.setQuantity(1);
-					kit.setAmount(product.getCost());
-					kit.setProductId(product.getId());
-					kit.setProductName(product.getProductName());
-					cart.add(kit);
-				} else {
-					int quantity = cart.get(index).getQuantity() + 1;
-					cart.get(index).setQuantity(quantity);
-				}
-				session.setAttribute("cartItems", cart);
+				int quantity = cart.get(index).getQuantity() + 1;
+				cart.get(index).setQuantity(quantity);
 			}
+			session.setAttribute("cartItems", cart);
 		}
+
 		return "redirect:/user/show-kit";
 	}
 
